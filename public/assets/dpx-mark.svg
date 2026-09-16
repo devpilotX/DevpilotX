@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+  <title id="title">DevPilotX mark</title>
+  <desc id="desc">Geometric DPX monogram in red and black</desc>
+  <rect width="120" height="120" rx="18" fill="#f7f4ec"/>
+  <path d="M18 20h28c24 0 36 14 36 40s-12 40-36 40H18V20zm26 63c13 0 20-8 20-23S57 37 44 37h-9v46h9z" fill="#0e0e0e"/>
+  <path d="M74 20h28v18H92v16h10v17H92v29H74V20z" fill="#b10e1b"/>
+  <path d="M54 20h15l8 13 8-13h15L84 58l16 42H85l-8-18-8 18H54l16-42-16-38z" fill="#b10e1b" opacity="0.95"/>
+</svg>
