@@ -14,7 +14,8 @@ const STATIC_TYPES = {
   '.png': 'image/png',
   '.txt': 'text/plain; charset=utf-8',
   '.webmanifest': 'application/manifest+json',
-  '.json': 'application/json; charset=utf-8'
+  '.json': 'application/json; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8'
 };
 
 function jsonLog(level, event, fields = {}) {

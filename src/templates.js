@@ -85,21 +85,11 @@ function baseLayout({ title, description, path, content, currentPath, type, imag
     <main id="content" class="shell main-content">${content}</main>
     <footer class="site-footer">
       <div class="shell footer-grid">
-        <p>Build systems with clarity, reliability, and measurable outcomes.</p>
+        <p>Build systems with clarity, reliability, and verifiable evidence.</p>
         <nav aria-label="Legal navigation">${footer}</nav>
       </div>
     </footer>
-    <script type="module">
-      const button = document.querySelector('.menu-toggle');
-      const nav = document.querySelector('#site-nav');
-      if (button && nav) {
-        button.addEventListener('click', () => {
-          const next = button.getAttribute('aria-expanded') !== 'true';
-          button.setAttribute('aria-expanded', String(next));
-          nav.classList.toggle('open', next);
-        });
-      }
-    </script>
+    <script src="/assets/app.js" defer></script>
   </body>
 </html>`;
 }
@@ -116,17 +106,23 @@ export function renderPage(route, data = {}) {
       content: `
         <section class="hero">
           <p class="kicker">Systems engineering practice</p>
-          <h1>Ship dependable software with disciplined architecture.</h1>
-          <p>DevPilotX designs and delivers resilient products across fintech, infrastructure, and civic-grade compliance workflows.</p>
+          <h1>Institutional software engineering with high-assurance execution.</h1>
+          <p>DevPilotX designs resilient software across fintech, infrastructure, and compliance-heavy domains with strict system boundaries and delivery discipline.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="/work">Explore work</a>
             <a class="button" href="/contact">Start a conversation</a>
           </div>
         </section>
+        <section class="section-ledger">
+          <h2>Evidence ledger</h2>
+          <ul class="ledger">
+            ${selectedProjects.slice(0, 4).map((project) => `<li><strong>${escapeHtml(project.name)}</strong><span>${escapeHtml(project.evidence)}</span></li>`).join('')}
+          </ul>
+        </section>
         <section>
           <h2>Selected projects</h2>
-          <ul class="project-list">
-            ${selectedProjects.slice(0, 6).map((project) => `<li><a href="/portfolio/${project.slug}">${escapeHtml(project.name)}</a><span>${escapeHtml(project.domain)}</span></li>`).join('')}
+          <ul class="portfolio-grid">
+            ${selectedProjects.slice(0, 6).map((project, index) => `<li class="portfolio-card ${index % 3 === 0 ? 'offset-card' : ''}"><a href="/portfolio/${project.slug}">${escapeHtml(project.name)}</a><span>${escapeHtml(project.domain)}</span></li>`).join('')}
           </ul>
         </section>
       `,
@@ -138,12 +134,13 @@ export function renderPage(route, data = {}) {
       content: `
         <section>
           <h1>Work</h1>
-          <p>Every engagement follows a measurable path: discovery, architecture, delivery, and operational hardening.</p>
-          <div class="cards">
-            <article><h2>Discovery</h2><p>Model risks, constraints, and success criteria with stakeholder alignment.</p></article>
-            <article><h2>Architecture</h2><p>Design explicit boundaries, security controls, and performance budgets.</p></article>
-            <article><h2>Delivery</h2><p>Implement incremental releases with rigorous verification and observability.</p></article>
-          </div>
+          <p>Every engagement follows a bounded execution path: discovery, architecture, delivery, and operational hardening.</p>
+          <ol class="work-track">
+            <li><h2>Discovery</h2><p>Model risks, constraints, and acceptance criteria with stakeholder alignment.</p></li>
+            <li><h2>Architecture</h2><p>Design explicit boundaries, security controls, and performance budgets before implementation.</p></li>
+            <li><h2>Delivery</h2><p>Ship incremental releases with repeatable verification and operational telemetry.</p></li>
+            <li><h2>Hardening</h2><p>Run post-release checks, operational drills, and maintenance planning for sustained reliability.</p></li>
+          </ol>
         </section>
       `
     },
@@ -154,8 +151,8 @@ export function renderPage(route, data = {}) {
         <section>
           <h1>Portfolio</h1>
           <p>Each case study captures the domain problem, system architecture, and strongest evidence signal.</p>
-          <ul class="project-list large">
-            ${selectedProjects.map((project) => `<li><a href="/portfolio/${project.slug}">${escapeHtml(project.name)}</a><span>${escapeHtml(project.problem)}</span></li>`).join('')}
+          <ul class="portfolio-grid full-grid">
+            ${selectedProjects.map((project, index) => `<li class="portfolio-card ${index % 2 === 1 ? 'offset-card' : ''}"><a href="/portfolio/${project.slug}">${escapeHtml(project.name)}</a><span>${escapeHtml(project.problem)}</span></li>`).join('')}
           </ul>
         </section>
       `
@@ -199,29 +196,6 @@ export function renderPage(route, data = {}) {
             <p id="contact-status" role="status" aria-live="polite"></p>
           </form>
         </section>
-        <script type="module">
-          const form = document.querySelector('#contact-form');
-          const status = document.querySelector('#contact-status');
-          if (form && status) {
-            form.addEventListener('submit', async (event) => {
-              event.preventDefault();
-              status.textContent = 'Submitting...';
-              const body = Object.fromEntries(new FormData(form).entries());
-              const response = await fetch('/api/contact', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(body)
-              });
-              const payload = await response.json();
-              if (!response.ok) {
-                status.textContent = payload.error || 'Request failed.';
-                return;
-              }
-              form.reset();
-              status.textContent = 'Message received. We will reply soon.';
-            });
-          }
-        </script>
       `
     },
     '/privacy': {

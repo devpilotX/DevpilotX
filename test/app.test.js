@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { after, before, test } from 'node:test';
 import { DatabaseSync } from 'node:sqlite';
 import { createServer } from '../src/server.js';
@@ -65,12 +66,34 @@ test('project detail route exists for every selected project', async () => {
 test('security headers are present', async () => {
   const response = await fetch(`${baseUrl}/`);
   assert.equal(response.headers.get('content-security-policy')?.includes("default-src 'self'"), true);
+  assert.equal(response.headers.get('content-security-policy')?.includes("script-src 'self'"), true);
+  assert.equal(response.headers.get('content-security-policy')?.includes("'unsafe-inline'"), false);
   assert.equal(response.headers.get('x-frame-options'), 'DENY');
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
   assert.equal(response.headers.get('permissions-policy')?.includes('camera=()'), true);
   assert.equal(response.headers.get('strict-transport-security')?.includes('max-age='), true);
   assert.ok(response.headers.get('x-request-id'));
+});
+
+test('pages load external app script and avoid inline scripts', async () => {
+  const home = await fetch(`${baseUrl}/`);
+  const homeHtml = await home.text();
+  assert.match(homeHtml, /<script src="\/assets\/app\.js" defer><\/script>/);
+  assert.equal(/<script(?![^>]*\bsrc=)[^>]*>/i.test(homeHtml), false);
+
+  const contact = await fetch(`${baseUrl}/contact`);
+  const contactHtml = await contact.text();
+  assert.match(contactHtml, /id="contact-form"/);
+  assert.match(contactHtml, /id="contact-status"/);
+  assert.equal(/<script(?![^>]*\bsrc=)[^>]*>/i.test(contactHtml), false);
+
+  const appScript = await fetch(`${baseUrl}/assets/app.js`);
+  assert.equal(appScript.status, 200);
+  assert.equal(appScript.headers.get('content-type')?.includes('text/javascript'), true);
+  const scriptSource = await appScript.text();
+  assert.match(scriptSource, /menu-toggle/);
+  assert.match(scriptSource, /contact-form/);
 });
 
 test('health and project APIs work', async () => {
@@ -154,4 +177,49 @@ test('custom 404 page is returned for unknown routes', async () => {
   assert.equal(response.status, 404);
   const html = await response.text();
   assert.match(html, /The page you requested was not found/);
+});
+
+test('metadata and sitemap expose valid absolute URLs without wrapper tokens', async () => {
+  const response = await fetch(`${baseUrl}/`);
+  const html = await response.text();
+  assert.match(html, /<link rel="canonical" href="https:\/\/devpilotx\.me\/"/);
+  assert.match(html, /<meta property="og:image" content="https:\/\/devpilotx\.me\/assets\/social-preview\.svg"/);
+  assert.equal(html.includes('{{https://'), false);
+
+  const sitemap = await fetch(`${baseUrl}/sitemap.xml`);
+  const sitemapXml = await sitemap.text();
+  assert.match(sitemapXml, /<loc>https:\/\/devpilotx\.me\/portfolio\//);
+  assert.equal(sitemapXml.includes('{{https://'), false);
+});
+
+test('content guardrails reject disallowed placeholders and inline script templates', () => {
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const disallowedExtensions = new Set(['.js', '.css', '.html', '.xml']);
+  const pending = [path.join(root, 'src'), path.join(root, 'public')];
+  const scanned = [];
+
+  while (pending.length > 0) {
+    const current = pending.pop();
+    const entries = fs.readdirSync(current, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        pending.push(fullPath);
+        continue;
+      }
+      if (!disallowedExtensions.has(path.extname(entry.name))) {
+        continue;
+      }
+      scanned.push(fullPath);
+      const content = fs.readFileSync(fullPath, 'utf8');
+      assert.equal(content.includes('—'), false, `Em dash detected in ${fullPath}`);
+      assert.equal(/\broadmap\b/i.test(content), false, `Roadmap mention detected in ${fullPath}`);
+      assert.equal(/lorem ipsum/i.test(content), false, `Lorem ipsum detected in ${fullPath}`);
+      assert.equal(/\bTODO\b/.test(content), false, `TODO placeholder detected in ${fullPath}`);
+      assert.equal(/\{\{\s*https?:\/\/[^}]+\s*\}\}/i.test(content), false, `Double-curly URL wrapper detected in ${fullPath}`);
+      assert.equal(/<script(?![^>]*\bsrc=)[^>]*>/i.test(content), false, `Inline script markup detected in ${fullPath}`);
+    }
+  }
+
+  assert.ok(scanned.length > 0);
 });
