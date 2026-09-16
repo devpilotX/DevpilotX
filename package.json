@@ -1,0 +1,23 @@
+{
+  "name": "devpilotx-site",
+  "version": "1.0.0",
+  "description": "Production website for DevPilotX.me",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test",
+    "lint": "find src test -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "check": "npm run lint && npm test"
+  },
+  "keywords": [
+    "node",
+    "portfolio",
+    "devpilotx"
+  ],
+  "author": "DevPilotX",
+  "license": "MIT"
+}
