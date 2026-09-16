@@ -1,29 +1,26 @@
 # DevPilotX.me
 
-Production source for the DevPilotX.me engineering portfolio, project archive, and secure contact workflow.
+Production source for the DevPilotX.me engineering portfolio and secure contact workflow.
 
-## What ships here
-
-- Distinct pages for Home, Work, Portfolio, Method, Profile, Contact, Privacy, Terms, Cookies, Accessibility, and Security
-- Fifteen dedicated project case studies
-- Native Node.js 24 HTTP server using modern ESM
-- SQLite contact storage with migrations and WAL mode
-- CSP-safe responsive navigation and contact form behavior
-- Custom SVG identity, favicon, social preview, sitemap, robots file, and web manifest
-- Docker packaging, automated CI, integration tests, and content guardrails
+This site is an inspectable engineering artifact. Project claims point to public repositories. Contact submissions are validated and stored before success is returned. Deployment, persistence, recovery, security, accessibility, and known limitations are documented as part of the product.
 
 ## Architecture
 
-- **Runtime:** Node.js 24 with no third-party runtime dependencies
-- **Server:** Native `node:http` routing with explicit handlers
-- **Views:** Server-rendered HTML with a shared accessible layout
-- **Client:** Small external JavaScript runtime at `/assets/app.js`
-- **Data:** Native `node:sqlite`, WAL mode, parameterized writes, and migration tracking
-- **Assets:** CSS and original SVG artwork served from `/public`
+| Layer | Implementation |
+| --- | --- |
+| Runtime | Node.js 24, native ESM |
+| HTTP | `node:http` with explicit routing |
+| Views | Server-rendered semantic HTML |
+| Client | Small external JavaScript runtime |
+| Data | Native `node:sqlite`, WAL mode, tracked migrations |
+| Assets | Original SVG identity and hand-authored CSS |
+| Delivery | Docker, Compose, persistent volume, GitHub Actions |
+
+There are no third-party runtime packages. The application uses Node.js platform APIs and one local database file.
 
 ## Routes
 
-### Public pages
+Public pages:
 
 - `/`
 - `/work`
@@ -38,7 +35,7 @@ Production source for the DevPilotX.me engineering portfolio, project archive, a
 - `/accessibility`
 - `/security`
 
-### APIs and operations
+Service routes:
 
 - `GET /healthz`
 - `GET /api/projects`
@@ -47,9 +44,11 @@ Production source for the DevPilotX.me engineering portfolio, project archive, a
 - `GET /robots.txt`
 - `GET /sitemap.xml`
 
-## Selected projects
+## Public portfolio
 
-| Project | Repository | Public destination |
+Only current, owner-authored public repositories are included. Private repositories and work owned by other people are excluded.
+
+| Project | Repository | Public site |
 | --- | --- | --- |
 | Permission Bureau | [auspice](https://github.com/devpilotX/auspice) | Repository |
 | Veydria | [Veydria](https://github.com/devpilotX/Veydria) | Repository |
@@ -59,43 +58,77 @@ Production source for the DevPilotX.me engineering portfolio, project archive, a
 | AEGIS | [aegis](https://github.com/devpilotX/aegis) | Repository |
 | Paisa Reality | [paisarealitymoney](https://github.com/devpilotX/paisarealitymoney) | [paisareality.com](https://paisareality.com) |
 | Bank Legacy | [Bank-Legacy](https://github.com/devpilotX/Bank-Legacy) | Repository |
-| Verify Bill | [verifybill](https://github.com/devpilotX/verifybill) | Repository |
-| Value.Codes | [Value.Codes](https://github.com/devpilotX/Value.Codes) | [value.codes](https://value.codes) |
+| Notion Agent | [Notion-Agent](https://github.com/devpilotX/Notion-Agent) | Repository |
+| Value.Codes | [value.codes](https://github.com/devpilotX/value.codes) | [value.codes](https://value.codes) |
 | TenderEdge | [tenderedge](https://github.com/devpilotX/tenderedge) | Repository |
-| Vouch | [Vouch](https://github.com/devpilotX/Vouch) | Repository |
-| CreatorBooks | [CreatorBooks](https://github.com/devpilotX/CreatorBooks) | Repository |
-| SmartLabel Inspector | [smart-label-gov](https://github.com/devpilotX/smart-label-gov) | Repository |
+| Vouch Relay | [vouch-backend](https://github.com/devpilotX/vouch-backend) | Repository |
+| OU-MRS | [OU-MRS](https://github.com/devpilotX/OU-MRS) | Repository |
+| Epicenter Exchange | [epicenter-exchange](https://github.com/devpilotX/epicenter-exchange) | [epicenterexchange.com](https://epicenterexchange.com) |
 | Mergenote | [mergenote](https://github.com/devpilotX/mergenote) | Repository |
 
-The separate [devpilotx.com](https://devpilotx.com) destination is preserved on the Profile page. A temporarily unavailable upstream site does not affect repository access.
+`devpilotx.com` is a separate profile destination. It is not used as a deployment link for unrelated projects.
 
-## Security baseline
+Finance-related repositories are presented as engineering and educational work. They are not investment advice, and past results do not predict future returns.
 
-- Restrictive Content Security Policy with external scripts only
-- Frame, MIME sniffing, referrer, permissions, and production HSTS headers
-- Same-origin enforcement for contact submissions
-- Honeypot protection and strict server-side validation
-- Configurable request body limit and rate limiting
-- Hashed network identifiers instead of raw IP storage
-- Parameterized SQLite writes
-- Structured logs with request IDs
-- Graceful SIGTERM and SIGINT shutdown handling
-- Automated checks for prohibited placeholders, malformed URL wrappers, inline scripts, and copy constraints
+## Contact workflow
 
-## Database and migrations
+`POST /api/contact` follows a store-first path:
 
-Migrations live in `db/migrations`.
+1. Verify the request origin.
+2. Apply the request-size limit.
+3. Apply rate limiting keyed by a salted network-address hash.
+4. Validate and normalize each field.
+5. Reject the hidden honeypot when populated.
+6. Insert the submission with a parameterized SQLite statement.
+7. Return a request identifier.
 
-`001_create_contacts.sql` creates the contact table and supporting indexes. The application creates a migration ledger and applies pending migrations during startup.
+The Contact page also exposes `devpilotx@gmail.com` as a direct fallback. Never send passwords, credentials, financial account data, or sensitive personal records through the form.
 
-Persistent paths:
+## Trust boundaries
+
+- Browser input is untrusted and validated on the server.
+- `SITE_ORIGIN` defines the accepted form origin.
+- `IP_HASH_SALT` remains in the deployment environment.
+- Raw network addresses are not intentionally stored in the contact table.
+- SQLite files are runtime data and excluded from Git.
+- External project and live-site links leave this application boundary.
+- Legal pages describe the implementation but are not compliance certifications.
+
+## Security controls
+
+- Restrictive Content Security Policy
+- External scripts without `unsafe-inline`
+- HSTS in production
+- Frame denial and MIME sniffing protection
+- Strict referrer and permissions policies
+- Same-origin form enforcement
+- Request-size and rate limits
+- Honeypot abuse control
+- Parameterized database writes
+- Salted network-address hashes
+- Structured logs and request identifiers
+- Graceful shutdown handling
+- Automated copy and URL guardrails
+
+See [SECURITY.md](SECURITY.md) for responsible disclosure guidance.
+
+## Database
+
+Migrations live in `db/migrations` and are recorded in the `migrations` table. `001_create_contacts.sql` creates the contact table and supporting indexes.
+
+Default paths:
 
 - Local: `./data/devpilotx.sqlite`
 - Container: `/app/data/devpilotx.sqlite`
 
-Mount `/app/data` on durable storage in production.
+SQLite is suitable for one application instance with durable local storage. A multi-instance deployment needs a shared database design.
 
 ## Local setup
+
+Requirements:
+
+- Node.js 24 or newer
+- npm
 
 ```bash
 npm ci
@@ -105,9 +138,24 @@ npm start
 
 Open `http://localhost:3000`.
 
-For production, set a unique secret `IP_HASH_SALT`, set `SITE_ORIGIN` to the public HTTPS origin, and place `DATABASE_PATH` on persistent storage.
+## Environment
 
-## Quality checks
+| Variable | Purpose | Production guidance |
+| --- | --- | --- |
+| `NODE_ENV` | Runtime mode | Set to `production` |
+| `HOST` | Listen address | Usually `0.0.0.0` in a container |
+| `PORT` | Listen port | Default `3000` |
+| `DATABASE_PATH` | SQLite database | Place on persistent storage |
+| `SITE_ORIGIN` | Accepted public origin | Use `https://devpilotx.me` |
+| `IP_HASH_SALT` | Abuse-control hash salt | Use a unique random secret |
+| `REQUEST_BODY_LIMIT_BYTES` | Maximum request body | Default `16384` |
+| `RATE_LIMIT_WINDOW_MS` | Rate-limit window | Default `60000` |
+| `RATE_LIMIT_MAX_REQUESTS` | Requests per window | Default `12` |
+| `LOG_LEVEL` | Structured logging level | Default `info` |
+
+Never commit `.env`.
+
+## Verification
 
 ```bash
 npm run lint
@@ -115,27 +163,52 @@ npm test
 npm run check
 ```
 
-The integration suite starts an isolated server and temporary database. It verifies every public route, every case study, security headers, CSP-compatible assets, APIs, contact rejection and persistence, metadata, sitemap output, content guardrails, and the custom 404.
+The integration suite verifies every public route and case-study route, the exact repository allowlist, optional live links, security headers, CSP-safe assets, APIs, contact rejection and persistence, finance disclaimers, metadata, sitemap output, publication guardrails, and the custom 404.
+
+GitHub Actions runs `npm ci` and `npm run check` with read-only repository permissions.
 
 ## Container deployment
 
 ```bash
-docker build -t devpilotx-site .
-docker run --rm -p 3000:3000 \
-  -e SITE_ORIGIN=https://devpilotx.me \
-  -e IP_HASH_SALT=replace-with-a-long-random-secret \
-  -v "$(pwd)/data:/app/data" \
-  devpilotx-site
+mkdir -p data
+export SITE_ORIGIN=https://devpilotx.me
+export IP_HASH_SALT="$(openssl rand -hex 32)"
+docker compose up -d --build
+curl --fail http://127.0.0.1:3000/healthz
 ```
 
-## CI
+The container runs as a non-root user, exposes a health check, uses a read-only root filesystem in Compose, and mounts `/app/data` for persistence.
 
-`.github/workflows/ci.yml` runs `npm ci` and `npm run check` on Node.js 24 with read-only repository permissions.
+Place an HTTPS reverse proxy or managed ingress in front of port 3000. Preserve the original host and protocol, monitor `/healthz`, collect structured logs, and protect backups. See [DEPLOYMENT.md](DEPLOYMENT.md) for the release, proxy, backup, restore, and operations runbook.
+
+## Production checklist
+
+- Set `NODE_ENV=production`.
+- Set the exact HTTPS `SITE_ORIGIN`.
+- Generate a unique `IP_HASH_SALT`.
+- Mount persistent storage at `/app/data`.
+- Configure TLS at the proxy or platform.
+- Monitor `/healthz` and 5xx responses.
+- Verify contact persistence from the public domain.
+- Confirm database backups and a tested restore path.
+- Review legal pages with qualified counsel.
+- Run `npm run check` against the release commit.
+
+## Accessibility
+
+The interface includes semantic headings, keyboard-operable navigation and forms, visible focus, a skip link, responsive layouts, reduced-motion support, readable contrast, and touch-sized targets. Report barriers through the Contact page or email address.
+
+## Known limitations
+
+- The in-memory rate limiter resets when the process restarts and is not shared across instances.
+- Contact records require an operational review process after deployment.
+- Linked repositories and external websites have independent availability and accessibility behavior.
+- Automated tests and documented controls reduce risk but do not prove the absence of defects.
 
 ## Legal note
 
-The Privacy, Terms, Cookies, Accessibility, and Security pages describe the behavior implemented in this repository. Have qualified counsel review the legal copy before commercial launch.
+The Privacy, Terms, Cookies, Accessibility, and Security pages describe the current implementation. Have qualified counsel review them before commercial launch or collecting sensitive categories of data.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+The website source is released under the [MIT License](LICENSE). Linked projects retain their own repository licenses.
