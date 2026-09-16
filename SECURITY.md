@@ -1,24 +1,58 @@
 # Security Policy
 
-## Supported Versions
+## Supported version
 
-The main branch is actively maintained for security updates.
+The latest commit on `main` is the only supported version. Security fixes are not backported to older commits.
 
-## Reporting a Vulnerability
+## Report a vulnerability
 
-Please report vulnerabilities through private channels before public disclosure.
+Send a private report to `devpilotx@gmail.com` before public disclosure.
 
-1. Send a detailed report to the maintainers with reproduction steps.
-2. Include impact, affected routes or APIs, and suggested mitigations if known.
-3. Allow time for triage and coordinated remediation before publication.
+Include:
 
-We aim to acknowledge reports within 3 business days.
+- Affected route, component, or commit
+- Clear reproduction steps
+- Expected and observed behavior
+- Practical impact
+- A minimal proof of concept that does not expose another person’s data
+- Suggested mitigation, if known
 
-## Operational Security Controls
+Do not include passwords, API keys, session values, database exports, or personal records in the first message.
 
-- Restrictive HTTP security headers, including CSP and frame protections.
-- Same-origin contact submission checks.
-- JSON request-size limits.
-- Honeypot spam defense and per-IP hash rate limiting.
-- SQLite parameterized writes and WAL mode.
-- Structured logs with request IDs.
+## Testing boundaries
+
+Good-faith testing must not:
+
+- Access, alter, or delete another person’s data
+- Degrade availability or create significant traffic
+- Use social engineering, phishing, or physical intrusion
+- Upload malware or destructive payloads
+- Test third-party services linked from this repository
+- Publish an unresolved vulnerability before coordinated disclosure
+
+Stop testing and report immediately if sensitive information is encountered.
+
+## Response process
+
+Reports are triaged according to reproducibility, affected data, required access, and practical impact. Receipt will be acknowledged when possible, but no fixed remediation deadline or bounty is promised. Status updates may be provided during investigation and coordinated disclosure.
+
+## Safe harbor
+
+The maintainer will not pursue action against good-faith research that follows this policy, avoids privacy harm, and gives reasonable time for remediation. This statement does not authorize testing against third-party infrastructure or activity prohibited by applicable law.
+
+## Security design
+
+The application includes:
+
+- Restrictive Content Security Policy
+- External scripts without `unsafe-inline`
+- Same-origin contact submission checks
+- Request-size limits and abuse rate limiting
+- Honeypot validation
+- Salted network-address hashes instead of raw address storage
+- Parameterized SQLite writes and migration tracking
+- Structured logs with request identifiers
+- Production HSTS and frame protections
+- Environment-based secret configuration
+
+These controls reduce risk but do not guarantee that defects are absent.
