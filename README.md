@@ -1,14 +1,25 @@
 # DevPilotX.me
 
-Production-ready multi-page website and contact workflow for DevPilotX.
+Production source for the DevPilotX.me engineering portfolio, project archive, and secure contact workflow.
+
+## What ships here
+
+- Distinct pages for Home, Work, Portfolio, Method, Profile, Contact, Privacy, Terms, Cookies, Accessibility, and Security
+- Fifteen dedicated project case studies
+- Native Node.js 24 HTTP server using modern ESM
+- SQLite contact storage with migrations and WAL mode
+- CSP-safe responsive navigation and contact form behavior
+- Custom SVG identity, favicon, social preview, sitemap, robots file, and web manifest
+- Docker packaging, automated CI, integration tests, and content guardrails
 
 ## Architecture
 
-- **Runtime**: Node.js 24, native ESM JavaScript, no third-party runtime dependencies.
-- **Server**: Native `http` server with explicit route handlers.
-- **Views**: Server-rendered HTML templates with shared layout, responsive nav, and accessible focus behavior.
-- **Data**: SQLite (`node:sqlite`) with WAL mode and migration tracking.
-- **Static assets**: CSS, SVG logo mark, favicon, social preview, and web manifest from `/public`.
+- **Runtime:** Node.js 24 with no third-party runtime dependencies
+- **Server:** Native `node:http` routing with explicit handlers
+- **Views:** Server-rendered HTML with a shared accessible layout
+- **Client:** Small external JavaScript runtime at `/assets/app.js`
+- **Data:** Native `node:sqlite`, WAL mode, parameterized writes, and migration tracking
+- **Assets:** CSS and original SVG artwork served from `/public`
 
 ## Routes
 
@@ -17,7 +28,7 @@ Production-ready multi-page website and contact workflow for DevPilotX.
 - `/`
 - `/work`
 - `/portfolio`
-- `/portfolio/:slug` for each selected case study
+- `/portfolio/:slug`
 - `/method`
 - `/profile`
 - `/contact`
@@ -38,51 +49,51 @@ Production-ready multi-page website and contact workflow for DevPilotX.
 
 ## Selected projects
 
-| Project | Slug | Domain | Repository | Live |
-| --- | --- | --- | --- | --- |
-| Permission Bureau | `auspice` | Identity and permission intelligence | https://github.com/devpilotX/auspice | https://devpilotx.com |
-| Veydria | `veydria` | Applied autonomy orchestration | https://github.com/devpilotX/veydria | https://devpilotx.com |
-| QuantSys | `quant` | Systematic strategy infrastructure | https://github.com/devpilotX/quant | https://devpilotx.com |
-| ProofSmith | `proofsmith` | Verification workflow tooling | https://github.com/devpilotX/proofsmith | https://devpilotx.com |
-| FerroDB | `ferrodb` | Data infrastructure and storage | https://github.com/devpilotX/ferrodb | https://devpilotx.com |
-| AEGIS | `aegis` | Security assurance platform | https://github.com/devpilotX/aegis | https://devpilotx.com |
-| Paisa Reality | `paisarealitymoney` | Financial clarity and public trust | https://github.com/devpilotX/paisarealitymoney | https://paisareality.com |
-| Bank Legacy | `bank-legacy` | Core modernization execution | https://github.com/devpilotX/bank-legacy | https://devpilotx.com |
-| Verify Bill | `verify-bill` | Billing integrity and audit | https://github.com/devpilotX/verify-bill | https://devpilotx.com |
-| Value.Codes | `value-codes` | Developer value intelligence | https://github.com/devpilotX/value-codes | https://value.codes |
-| TenderEdge | `tenderedge` | Procurement response systems | https://github.com/devpilotX/tenderedge | https://devpilotx.com |
-| Vouch | `vouch` | Trust signaling infrastructure | https://github.com/devpilotX/vouch | https://devpilotx.com |
-| CreatorBooks | `creatorbooks` | Creator finance operations | https://github.com/devpilotX/creatorbooks | https://devpilotx.com |
-| SmartLabel Inspector | `smart-label-gov` | Public labeling compliance | https://github.com/devpilotX/smart-label-gov | https://devpilotx.com |
-| Mergenote | `mergenote` | Collaboration knowledge continuity | https://github.com/devpilotX/mergenote | https://devpilotx.com |
+| Project | Repository | Public destination |
+| --- | --- | --- |
+| Permission Bureau | [auspice](https://github.com/devpilotX/auspice) | Repository |
+| Veydria | [Veydria](https://github.com/devpilotX/Veydria) | Repository |
+| Quant | [Quant](https://github.com/devpilotX/Quant) | Repository |
+| ProofSmith | [ProofSmith](https://github.com/devpilotX/ProofSmith) | Repository |
+| FerroDB | [FerroDB](https://github.com/devpilotX/FerroDB) | Repository |
+| AEGIS | [aegis](https://github.com/devpilotX/aegis) | Repository |
+| Paisa Reality | [paisarealitymoney](https://github.com/devpilotX/paisarealitymoney) | [paisareality.com](https://paisareality.com) |
+| Bank Legacy | [Bank-Legacy](https://github.com/devpilotX/Bank-Legacy) | Repository |
+| Verify Bill | [verifybill](https://github.com/devpilotX/verifybill) | Repository |
+| Value.Codes | [Value.Codes](https://github.com/devpilotX/Value.Codes) | [value.codes](https://value.codes) |
+| TenderEdge | [tenderedge](https://github.com/devpilotX/tenderedge) | Repository |
+| Vouch | [Vouch](https://github.com/devpilotX/Vouch) | Repository |
+| CreatorBooks | [CreatorBooks](https://github.com/devpilotX/CreatorBooks) | Repository |
+| SmartLabel Inspector | [smart-label-gov](https://github.com/devpilotX/smart-label-gov) | Repository |
+| Mergenote | [mergenote](https://github.com/devpilotX/mergenote) | Repository |
 
-## Security controls
+The separate [devpilotx.com](https://devpilotx.com) destination is preserved on the Profile page. A temporarily unavailable upstream site does not affect repository access.
 
-- CSP, frame protections, MIME sniffing protection, referrer policy, permissions policy.
-- Production HSTS when `NODE_ENV=production`.
-- Same-origin enforcement for contact API.
-- Honeypot spam field and strict server-side validation.
-- Request body size cap (`REQUEST_BODY_LIMIT_BYTES`).
-- In-memory rate limiting keyed by hashed client IP.
-- Parameterized SQLite writes and migration tracking.
-- Structured JSON logs with per-request IDs.
-- Graceful shutdown handling for SIGTERM and SIGINT.
+## Security baseline
+
+- Restrictive Content Security Policy with external scripts only
+- Frame, MIME sniffing, referrer, permissions, and production HSTS headers
+- Same-origin enforcement for contact submissions
+- Honeypot protection and strict server-side validation
+- Configurable request body limit and rate limiting
+- Hashed network identifiers instead of raw IP storage
+- Parameterized SQLite writes
+- Structured logs with request IDs
+- Graceful SIGTERM and SIGINT shutdown handling
+- Automated checks for prohibited placeholders, malformed URL wrappers, inline scripts, and copy constraints
 
 ## Database and migrations
 
-Schema migrations live in `db/migrations`.
+Migrations live in `db/migrations`.
 
-Current migration:
+`001_create_contacts.sql` creates the contact table and supporting indexes. The application creates a migration ledger and applies pending migrations during startup.
 
-- `001_create_contacts.sql` creates `contacts` and indexes.
+Persistent paths:
 
-The server creates the migration ledger table (`migrations`) and applies pending migration files at startup.
+- Local: `./data/devpilotx.sqlite`
+- Container: `/app/data/devpilotx.sqlite`
 
-### Persistent operations
-
-- Local default database path: `./data/devpilotx.sqlite`
-- Docker default database path: `/app/data/devpilotx.sqlite`
-- Keep database files on persistent storage for production workloads.
+Mount `/app/data` on durable storage in production.
 
 ## Local setup
 
@@ -94,17 +105,9 @@ npm start
 
 Open `http://localhost:3000`.
 
-## Environment variables
+For production, set a unique secret `IP_HASH_SALT`, set `SITE_ORIGIN` to the public HTTPS origin, and place `DATABASE_PATH` on persistent storage.
 
-See `.env.example`.
-
-Important values:
-
-- `SITE_ORIGIN` must match the public origin for same-origin contact protection.
-- `IP_HASH_SALT` must be unique and secret in production.
-- `DATABASE_PATH` should point to persistent storage.
-
-## Testing and quality checks
+## Quality checks
 
 ```bash
 npm run lint
@@ -112,25 +115,27 @@ npm test
 npm run check
 ```
 
-The integration tests start an isolated server with a temporary SQLite database and validate routes, headers, APIs, contact behavior, and custom 404 handling.
+The integration suite starts an isolated server and temporary database. It verifies every public route, every case study, security headers, CSP-compatible assets, APIs, contact rejection and persistence, metadata, sitemap output, content guardrails, and the custom 404.
 
-## Deployment
-
-### Container
+## Container deployment
 
 ```bash
 docker build -t devpilotx-site .
-docker run -p 3000:3000 -e IP_HASH_SALT=replace-me -v $(pwd)/data:/app/data devpilotx-site
+docker run --rm -p 3000:3000 \
+  -e SITE_ORIGIN=https://devpilotx.me \
+  -e IP_HASH_SALT=replace-with-a-long-random-secret \
+  -v "$(pwd)/data:/app/data" \
+  devpilotx-site
 ```
 
-### GitHub Actions CI
+## CI
 
-Workflow: `.github/workflows/ci.yml`
-
-- Uses Node.js 24
-- Installs dependencies with `npm ci`
-- Runs `npm run check`
+`.github/workflows/ci.yml` runs `npm ci` and `npm run check` on Node.js 24 with read-only repository permissions.
 
 ## Legal note
 
-Privacy, terms, cookies, accessibility, and security pages match current behavior of this codebase. This legal copy should be reviewed by qualified counsel before any commercial launch.
+The Privacy, Terms, Cookies, Accessibility, and Security pages describe the behavior implemented in this repository. Have qualified counsel review the legal copy before commercial launch.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
