@@ -49,7 +49,7 @@ test('public routes return 200', async () => {
     const response = await fetch(`${baseUrl}${route}`);
     assert.equal(response.status, 200, `Expected 200 for ${route}`);
     const html = await response.text();
-    assert.match(html, /<h1>/);
+    assert.match(html, /<h1/);
   }
 });
 
@@ -65,12 +65,30 @@ test('project detail route exists for every selected project', async () => {
 test('security headers are present', async () => {
   const response = await fetch(`${baseUrl}/`);
   assert.equal(response.headers.get('content-security-policy')?.includes("default-src 'self'"), true);
+  assert.equal(response.headers.get('content-security-policy')?.includes("script-src 'self'"), true);
   assert.equal(response.headers.get('x-frame-options'), 'DENY');
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
   assert.equal(response.headers.get('permissions-policy')?.includes('camera=()'), true);
   assert.equal(response.headers.get('strict-transport-security')?.includes('max-age='), true);
   assert.ok(response.headers.get('x-request-id'));
+});
+
+test('pages load external browser script and avoid inline scripts', async () => {
+  for (const route of ['/', '/contact', '/portfolio']) {
+    const response = await fetch(`${baseUrl}${route}`);
+    const html = await response.text();
+    assert.match(html, /<script type="module" src="\/assets\/app\.js"><\/script>/);
+    assert.equal(/<script(?![^>]*src=)/.test(html), false, `Inline script found on ${route}`);
+    assert.equal(html.includes('{{'), false);
+    assert.equal(html.includes('}}'), false);
+  }
+
+  const appScript = await fetch(`${baseUrl}/assets/app.js`);
+  assert.equal(appScript.status, 200);
+  const appScriptBody = await appScript.text();
+  assert.match(appScriptBody, /initMobileMenu/);
+  assert.match(appScriptBody, /initContactForm/);
 });
 
 test('health and project APIs work', async () => {
@@ -92,6 +110,25 @@ test('health and project APIs work', async () => {
 
   const missing = await fetch(`${baseUrl}/api/projects/unknown`);
   assert.equal(missing.status, 404);
+});
+
+test('project repository links are complete and corrected', () => {
+  assert.equal(selectedProjects.length, 15);
+
+  const byName = new Map(selectedProjects.map((project) => [project.name, project.repository]));
+
+  assert.equal(byName.get('Veydria'), 'https://github.com/devpilotX/Veydria');
+  assert.equal(byName.get('QuantSys'), 'https://github.com/devpilotX/Quant');
+  assert.equal(byName.get('ProofSmith'), 'https://github.com/devpilotX/ProofSmith');
+  assert.equal(byName.get('FerroDB'), 'https://github.com/devpilotX/FerroDB');
+  assert.equal(byName.get('Bank Legacy'), 'https://github.com/devpilotX/Bank-Legacy');
+  assert.equal(byName.get('Value.Codes'), 'https://github.com/devpilotX/Value.Codes');
+  assert.equal(byName.get('CreatorBooks'), 'https://github.com/devpilotX/CreatorBooks');
+  assert.equal(byName.get('Vouch'), 'https://github.com/devpilotX/Vouch');
+
+  for (const project of selectedProjects) {
+    assert.match(project.repository, /^https:\/\/github\.com\/devpilotX\/[A-Za-z0-9._-]+$/);
+  }
 });
 
 test('contact API validates invalid requests and stores valid submissions', async () => {
@@ -147,6 +184,17 @@ test('contact API validates invalid requests and stores valid submissions', asyn
   assert.equal(row.email, 'ava@example.com');
   assert.equal(row.hashed_ip.length, 64);
   assert.equal(row.hashed_ip.includes('127.0.0.1'), false);
+});
+
+test('sitemap has normal absolute URLs and includes case studies', async () => {
+  const response = await fetch(`${baseUrl}/sitemap.xml`);
+  assert.equal(response.status, 200);
+  const body = await response.text();
+
+  assert.match(body, /<loc>https:\/\/devpilotx\.me\/work<\/loc>/);
+  assert.match(body, /<loc>https:\/\/devpilotx\.me\/portfolio\/auspice<\/loc>/);
+  assert.equal(body.includes('{{'), false);
+  assert.equal(body.includes('}}'), false);
 });
 
 test('custom 404 page is returned for unknown routes', async () => {

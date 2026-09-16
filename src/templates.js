@@ -26,11 +26,15 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function absoluteSiteUrl(path) {
+  return `https://devpilotx.me${path}`;
+}
+
 function buildMeta({ title, description, path, image = '/assets/social-preview.svg', type = 'website' }) {
-  const canonical = `https://devpilotx.me${path}`;
+  const canonical = absoluteSiteUrl(path);
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
-  const safeImage = escapeHtml(`https://devpilotx.me${image}`);
+  const safeImage = escapeHtml(absoluteSiteUrl(image));
 
   return `
     <title>${safeTitle}</title>
@@ -89,17 +93,7 @@ function baseLayout({ title, description, path, content, currentPath, type, imag
         <nav aria-label="Legal navigation">${footer}</nav>
       </div>
     </footer>
-    <script type="module">
-      const button = document.querySelector('.menu-toggle');
-      const nav = document.querySelector('#site-nav');
-      if (button && nav) {
-        button.addEventListener('click', () => {
-          const next = button.getAttribute('aria-expanded') !== 'true';
-          button.setAttribute('aria-expanded', String(next));
-          nav.classList.toggle('open', next);
-        });
-      }
-    </script>
+    <script type="module" src="/assets/app.js"></script>
   </body>
 </html>`;
 }
@@ -108,26 +102,44 @@ function section(title, body) {
   return `<section><h1>${escapeHtml(title)}</h1><p>${body}</p></section>`;
 }
 
+function projectCard(project) {
+  return `<article class="portfolio-card" data-reveal>
+    <p class="kicker">Case study</p>
+    <h2><a href="/portfolio/${project.slug}">${escapeHtml(project.name)}</a></h2>
+    <p>${escapeHtml(project.domain)}</p>
+    <p class="muted">${escapeHtml(project.evidence)}</p>
+  </article>`;
+}
+
 export function renderPage(route, data = {}) {
   const pages = {
     '/': {
       title: 'DevPilotX.me | Systems and product engineering',
       description: 'DevPilotX builds high-assurance products with disciplined systems design and measurable delivery.',
       content: `
-        <section class="hero">
-          <p class="kicker">Systems engineering practice</p>
-          <h1>Ship dependable software with disciplined architecture.</h1>
-          <p>DevPilotX designs and delivers resilient products across fintech, infrastructure, and civic-grade compliance workflows.</p>
+        <section class="hero hero-compact">
+          <p class="kicker">Institutional systems practice</p>
+          <h1 class="display-title">Reliable architecture for critical software delivery.</h1>
+          <p class="hero-lede">DevPilotX builds security-conscious products with explicit operating models, measured quality gates, and maintainable delivery cadence.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="/work">Explore work</a>
             <a class="button" href="/contact">Start a conversation</a>
           </div>
         </section>
-        <section>
-          <h2>Selected projects</h2>
-          <ul class="project-list">
-            ${selectedProjects.slice(0, 6).map((project) => `<li><a href="/portfolio/${project.slug}">${escapeHtml(project.name)}</a><span>${escapeHtml(project.domain)}</span></li>`).join('')}
+        <section class="evidence-ledger" aria-labelledby="evidence-ledger-title">
+          <h2 id="evidence-ledger-title">Evidence ledger</h2>
+          <ul>
+            <li>Fifteen curated project records are served by a typed portfolio model in this repository.</li>
+            <li>Every project publishes a dedicated detail route and matching project API endpoint.</li>
+            <li>Contact intake persists validated records through migration-controlled SQLite writes.</li>
+            <li>Security controls, legal pages, and route verification are covered by automated tests.</li>
           </ul>
+        </section>
+        <section>
+          <h2>Selected portfolio</h2>
+          <div class="portfolio-grid">
+            ${selectedProjects.slice(0, 6).map(projectCard).join('')}
+          </div>
         </section>
       `,
       type: 'website'
@@ -137,12 +149,14 @@ export function renderPage(route, data = {}) {
       description: 'Delivery model and project outcomes for DevPilotX engagements.',
       content: `
         <section>
-          <h1>Work</h1>
-          <p>Every engagement follows a measurable path: discovery, architecture, delivery, and operational hardening.</p>
-          <div class="cards">
-            <article><h2>Discovery</h2><p>Model risks, constraints, and success criteria with stakeholder alignment.</p></article>
-            <article><h2>Architecture</h2><p>Design explicit boundaries, security controls, and performance budgets.</p></article>
-            <article><h2>Delivery</h2><p>Implement incremental releases with rigorous verification and observability.</p></article>
+          <p class="kicker">Operating method</p>
+          <h1 class="display-title">Delivery system tuned for clarity and control.</h1>
+          <p>Every engagement follows a disciplined cycle: framing, architecture, implementation, and operational verification.</p>
+          <div class="cards cards-asymmetric">
+            <article data-reveal><h2>Framing</h2><p>Align decision rights, constraints, and acceptance criteria before implementation.</p></article>
+            <article data-reveal><h2>Architecture</h2><p>Design boundaries, trust assumptions, and failure behavior with explicit controls.</p></article>
+            <article data-reveal><h2>Execution</h2><p>Ship bounded increments with route-level tests and operational telemetry hooks.</p></article>
+            <article data-reveal><h2>Hardening</h2><p>Validate security headers, request controls, and persistent data operations before release.</p></article>
           </div>
         </section>
       `
@@ -152,11 +166,12 @@ export function renderPage(route, data = {}) {
       description: 'Case studies across the DevPilotX project portfolio.',
       content: `
         <section>
-          <h1>Portfolio</h1>
-          <p>Each case study captures the domain problem, system architecture, and strongest evidence signal.</p>
-          <ul class="project-list large">
-            ${selectedProjects.map((project) => `<li><a href="/portfolio/${project.slug}">${escapeHtml(project.name)}</a><span>${escapeHtml(project.problem)}</span></li>`).join('')}
-          </ul>
+          <p class="kicker">Project index</p>
+          <h1 class="display-title">Portfolio case studies</h1>
+          <p>Each record captures domain, problem framing, architecture approach, and implementation signal grounded in this repository.</p>
+          <div class="portfolio-grid portfolio-grid-full">
+            ${selectedProjects.map(projectCard).join('')}
+          </div>
         </section>
       `
     },
@@ -199,29 +214,6 @@ export function renderPage(route, data = {}) {
             <p id="contact-status" role="status" aria-live="polite"></p>
           </form>
         </section>
-        <script type="module">
-          const form = document.querySelector('#contact-form');
-          const status = document.querySelector('#contact-status');
-          if (form && status) {
-            form.addEventListener('submit', async (event) => {
-              event.preventDefault();
-              status.textContent = 'Submitting...';
-              const body = Object.fromEntries(new FormData(form).entries());
-              const response = await fetch('/api/contact', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(body)
-              });
-              const payload = await response.json();
-              if (!response.ok) {
-                status.textContent = payload.error || 'Request failed.';
-                return;
-              }
-              form.reset();
-              status.textContent = 'Message received. We will reply soon.';
-            });
-          }
-        </script>
       `
     },
     '/privacy': {
@@ -264,9 +256,9 @@ export function renderPage(route, data = {}) {
       type: 'article',
       currentPath: '/portfolio',
       content: `
-        <article class="case-study">
+        <article class="case-study" data-reveal>
           <p class="kicker">Case study</p>
-          <h1>${escapeHtml(project.name)}</h1>
+          <h1 class="display-title">${escapeHtml(project.name)}</h1>
           <dl>
             <div><dt>Domain</dt><dd>${escapeHtml(project.domain)}</dd></div>
             <div><dt>Problem</dt><dd>${escapeHtml(project.problem)}</dd></div>
