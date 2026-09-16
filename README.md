@@ -2,9 +2,9 @@
 
 Production source for the DevPilotX.me engineering portfolio and secure contact workflow.
 
-The site is designed as an inspectable engineering artifact. Public claims point to public repositories. The contact path stores submissions before returning success. Deployment, persistence, recovery, security, and accessibility are documented as part of the product.
+This site is an inspectable engineering artifact. Project claims point to public repositories. Contact submissions are validated and stored before success is returned. Deployment, persistence, recovery, security, accessibility, and known limitations are documented as part of the product.
 
-## System overview
+## Architecture
 
 | Layer | Implementation |
 | --- | --- |
@@ -14,11 +14,13 @@ The site is designed as an inspectable engineering artifact. Public claims point
 | Client | Small external JavaScript runtime |
 | Data | Native `node:sqlite`, WAL mode, tracked migrations |
 | Assets | Original SVG identity and hand-authored CSS |
-| Delivery | Docker, persistent volume, GitHub Actions CI |
+| Delivery | Docker, Compose, persistent volume, GitHub Actions |
 
-There are no third-party runtime packages. The application uses Node.js platform APIs and a single local database file.
+There are no third-party runtime packages. The application uses Node.js platform APIs and one local database file.
 
-## Public routes
+## Routes
+
+Public pages:
 
 - `/`
 - `/work`
@@ -33,7 +35,7 @@ There are no third-party runtime packages. The application uses Node.js platform
 - `/accessibility`
 - `/security`
 
-## Service routes
+Service routes:
 
 - `GET /healthz`
 - `GET /api/projects`
@@ -42,9 +44,9 @@ There are no third-party runtime packages. The application uses Node.js platform
 - `GET /robots.txt`
 - `GET /sitemap.xml`
 
-## Public project selection
+## Public portfolio
 
-Only owner-authored public repositories are included. Private repositories and `smart-label-gov` are intentionally excluded.
+Only current, owner-authored public repositories are included. Private repositories and work owned by other people are excluded.
 
 | Project | Repository | Public site |
 | --- | --- | --- |
@@ -64,84 +66,62 @@ Only owner-authored public repositories are included. Private repositories and `
 | Epicenter Exchange | [epicenter-exchange](https://github.com/devpilotX/epicenter-exchange) | [epicenterexchange.com](https://epicenterexchange.com) |
 | Mergenote | [mergenote](https://github.com/devpilotX/mergenote) | Repository |
 
-`devpilotx.com` remains a separate profile destination. It is not presented as a deployment for unrelated projects.
+`devpilotx.com` is a separate profile destination. It is not used as a deployment link for unrelated projects.
 
 Finance-related repositories are presented as engineering and educational work. They are not investment advice, and past results do not predict future returns.
 
-## Contact delivery model
+## Contact workflow
 
 `POST /api/contact` follows a store-first path:
 
 1. Verify the request origin.
 2. Apply the request-size limit.
 3. Apply rate limiting keyed by a salted network-address hash.
-4. Validate and normalize fields.
-5. Reject the hidden honeypot field when populated.
+4. Validate and normalize each field.
+5. Reject the hidden honeypot when populated.
 6. Insert the submission with a parameterized SQLite statement.
 7. Return a request identifier.
 
-The form also displays `devpilotx@gmail.com` as a direct fallback. Do not send passwords, credentials, financial account data, or sensitive personal records through the form.
+The Contact page also exposes `devpilotx@gmail.com` as a direct fallback. Never send passwords, credentials, financial account data, or sensitive personal records through the form.
 
 ## Trust boundaries
 
 - Browser input is untrusted and validated on the server.
 - `SITE_ORIGIN` defines the accepted form origin.
-- `IP_HASH_SALT` stays in the deployment environment.
+- `IP_HASH_SALT` remains in the deployment environment.
 - Raw network addresses are not intentionally stored in the contact table.
 - SQLite files are runtime data and excluded from Git.
-- External project and live-site links leave the application security boundary.
-- Legal copy describes the implementation but is not a compliance certification.
+- External project and live-site links leave this application boundary.
+- Legal pages describe the implementation but are not compliance certifications.
 
 ## Security controls
 
 - Restrictive Content Security Policy
-- External scripts only, without `unsafe-inline`
+- External scripts without `unsafe-inline`
+- HSTS in production
 - Frame denial and MIME sniffing protection
 - Strict referrer and permissions policies
-- HSTS in production
 - Same-origin form enforcement
-- Configurable request-size and rate limits
+- Request-size and rate limits
 - Honeypot abuse control
 - Parameterized database writes
-- Hashed network identifiers
-- Structured logs and request IDs
+- Salted network-address hashes
+- Structured logs and request identifiers
 - Graceful shutdown handling
 - Automated copy and URL guardrails
 
 See [SECURITY.md](SECURITY.md) for responsible disclosure guidance.
 
-## Database and migrations
+## Database
 
-Migrations live in `db/migrations` and are recorded in the `migrations` table.
-
-`001_create_contacts.sql` creates the contact table and supporting indexes. The server applies pending migrations during startup.
+Migrations live in `db/migrations` and are recorded in the `migrations` table. `001_create_contacts.sql` creates the contact table and supporting indexes.
 
 Default paths:
 
 - Local: `./data/devpilotx.sqlite`
 - Container: `/app/data/devpilotx.sqlite`
 
-### Backup
-
-Stop writes or create a SQLite-safe snapshot, then retain the database and any `-wal` file together. For a stopped container:
-
-```bash
-docker compose stop web
-cp data/devpilotx.sqlite "backup/devpilotx-$(date +%Y%m%d-%H%M%S).sqlite"
-docker compose start web
-```
-
-### Restore
-
-```bash
-docker compose stop web
-cp backup/devpilotx-YYYYMMDD-HHMMSS.sqlite data/devpilotx.sqlite
-rm -f data/devpilotx.sqlite-wal data/devpilotx.sqlite-shm
-docker compose start web
-curl --fail http://localhost:3000/healthz
-```
-
-Test backup and restore procedures before relying on them.
+SQLite is suitable for one application instance with durable local storage. A multi-instance deployment needs a shared database design.
 
 ## Local setup
 
@@ -158,7 +138,7 @@ npm start
 
 Open `http://localhost:3000`.
 
-## Environment reference
+## Environment
 
 | Variable | Purpose | Production guidance |
 | --- | --- | --- |
@@ -183,24 +163,23 @@ npm test
 npm run check
 ```
 
-The integration suite starts an isolated production-mode server and temporary database. It verifies public routes, every case-study route, security headers, CSP-compatible assets, APIs, contact rejection and persistence, metadata, sitemap output, copy guardrails, and the custom 404.
+The integration suite verifies every public route and case-study route, the exact repository allowlist, optional live links, security headers, CSP-safe assets, APIs, contact rejection and persistence, finance disclaimers, metadata, sitemap output, publication guardrails, and the custom 404.
 
 GitHub Actions runs `npm ci` and `npm run check` with read-only repository permissions.
 
 ## Container deployment
 
 ```bash
-docker build -t devpilotx-site .
-docker run --rm \
-  -p 3000:3000 \
-  -e NODE_ENV=production \
-  -e SITE_ORIGIN=https://devpilotx.me \
-  -e IP_HASH_SALT=replace-with-a-long-random-secret \
-  -v "$(pwd)/data:/app/data" \
-  devpilotx-site
+mkdir -p data
+export SITE_ORIGIN=https://devpilotx.me
+export IP_HASH_SALT="$(openssl rand -hex 32)"
+docker compose up -d --build
+curl --fail http://127.0.0.1:3000/healthz
 ```
 
-Place an HTTPS reverse proxy or managed platform in front of port 3000. Forward the original host and protocol, persist `/app/data`, monitor `/healthz`, collect structured logs, and back up the database.
+The container runs as a non-root user, exposes a health check, uses a read-only root filesystem in Compose, and mounts `/app/data` for persistence.
+
+Place an HTTPS reverse proxy or managed ingress in front of port 3000. Preserve the original host and protocol, monitor `/healthz`, collect structured logs, and protect backups. See [DEPLOYMENT.md](DEPLOYMENT.md) for the release, proxy, backup, restore, and operations runbook.
 
 ## Production checklist
 
@@ -208,23 +187,23 @@ Place an HTTPS reverse proxy or managed platform in front of port 3000. Forward 
 - Set the exact HTTPS `SITE_ORIGIN`.
 - Generate a unique `IP_HASH_SALT`.
 - Mount persistent storage at `/app/data`.
-- Configure TLS at the reverse proxy or platform.
-- Monitor `/healthz`.
-- Verify the contact form from the public domain.
+- Configure TLS at the proxy or platform.
+- Monitor `/healthz` and 5xx responses.
+- Verify contact persistence from the public domain.
 - Confirm database backups and a tested restore path.
 - Review legal pages with qualified counsel.
 - Run `npm run check` against the release commit.
 
 ## Accessibility
 
-The interface includes semantic headings, keyboard-operable navigation and forms, visible focus, a skip link, responsive layouts, reduced-motion support, readable contrast, and targets sized for touch. Report barriers through the contact page or email address.
+The interface includes semantic headings, keyboard-operable navigation and forms, visible focus, a skip link, responsive layouts, reduced-motion support, readable contrast, and touch-sized targets. Report barriers through the Contact page or email address.
 
 ## Known limitations
 
-- SQLite is appropriate for a single application instance with persistent local storage. Multi-region or horizontally scaled deployment requires a shared database design.
 - The in-memory rate limiter resets when the process restarts and is not shared across instances.
-- The contact database needs an operational review process after deployment.
-- Linked repositories and third-party sites have independent availability and accessibility behavior.
+- Contact records require an operational review process after deployment.
+- Linked repositories and external websites have independent availability and accessibility behavior.
+- Automated tests and documented controls reduce risk but do not prove the absence of defects.
 
 ## Legal note
 
