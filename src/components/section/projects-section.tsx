@@ -1,6 +1,7 @@
 import BlurFade from "@/components/magicui/blur-fade";
 import { ProjectCard } from "@/components/project-card";
 import { DATA } from "@/data/resume";
+import { withBase } from "@/lib/utils";
 
 const BLUR_FADE_DELAY = 0.04;
 
@@ -46,7 +47,7 @@ export default function ProjectsSection() {
                                 description={project.description}
                                 dates={project.dates}
                                 tags={project.technologies}
-                                image={project.image}
+                                image={withBase(project.image)}
                                 video={project.video}
                                 links={project.links}
                             />

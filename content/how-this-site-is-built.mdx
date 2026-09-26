@@ -35,6 +35,6 @@ That change had a few side effects.
 
 ## Deploying
 
-A single workflow in `.github/workflows` handles everything. On a pull request it runs the linter, the type checker and a full build. On a push to `main` it also uploads the `out` folder and publishes it with `actions/deploy-pages`. The `CNAME` file in `public` tells GitHub Pages to serve the site on devpilotx.me.
+A single workflow in `.github/workflows` handles everything. On a pull request it runs the linter, the type checker and a full build. On a push to `main` it also reads the Pages settings with `actions/configure-pages`, builds with the right base path, and publishes the `out` folder with `actions/deploy-pages`. Because the base path comes from GitHub, the same code works under `devpilotx.github.io/devpilotX` today and on a custom domain later.
 
 Adding a post is a new `.mdx` file in `content`. Pushing it to `main` is the whole release process.

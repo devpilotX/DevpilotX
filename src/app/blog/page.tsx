@@ -2,22 +2,25 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import BlurFade from "@/components/magicui/blur-fade";
 import { BlogList, type BlogListItem } from "@/components/blog-list";
+import { DATA } from "@/data/resume";
 import { BLOG_DESCRIPTION, getSlug, getSortedPosts } from "@/lib/blog";
+
+const OG_IMAGE = `${DATA.url}/blog/og.png`;
 
 export const metadata: Metadata = {
   title: "Blog",
   description: BLOG_DESCRIPTION,
-  alternates: { canonical: "/blog/" },
+  alternates: { canonical: `${DATA.url}/blog/` },
   openGraph: {
     title: "Blog",
     description: BLOG_DESCRIPTION,
-    images: [{ url: "/blog/og.png", width: 1200, height: 630, alt: "Blog" }],
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Blog" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Blog",
     description: BLOG_DESCRIPTION,
-    images: ["/blog/og.png"],
+    images: [OG_IMAGE],
   },
 };
 

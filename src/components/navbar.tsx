@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DATA } from "@/data/resume";
+import { withBase } from "@/lib/utils";
 
 export default function Navbar() {
   return (
@@ -21,7 +22,7 @@ export default function Navbar() {
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
                 <a
-                  href={item.href}
+                  href={isExternal ? item.href : withBase(item.href)}
                   target={isExternal ? "_blank" : undefined}
                   rel={isExternal ? "noopener noreferrer" : undefined}
                 >

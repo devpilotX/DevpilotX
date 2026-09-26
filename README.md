@@ -1,10 +1,10 @@
-# devpilotx.me
+# devpilotX
 
 [![CI and deploy](https://github.com/devpilotX/devpilotX/actions/workflows/deploy.yml/badge.svg)](https://github.com/devpilotX/devpilotX/actions/workflows/deploy.yml)
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Fdevpilotx.me&label=devpilotx.me)](https://devpilotx.me)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fdevpilotx.github.io%2FdevpilotX%2F&label=website)](https://devpilotx.github.io/devpilotX/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Source code for my personal site at **[devpilotx.me](https://devpilotx.me)**.
+Source code for my personal site, live at **[devpilotx.github.io/devpilotX](https://devpilotx.github.io/devpilotX/)**.
 
 Hi, I'm Dipanshu. I'm a full-stack developer from India and I'm currently building my own SaaS under the name DevPilotX. I work mostly with Python, Node.js, TypeScript and Docker, and I host my projects on AWS EC2 and Oracle Cloud machines.
 
@@ -34,25 +34,25 @@ pnpm dev
 
 Then open http://localhost:3000.
 
-| Command          | What it does                                     |
-| ---------------- | ------------------------------------------------ |
-| `pnpm dev`       | Starts the dev server with hot reload            |
-| `pnpm build`     | Builds the static site into `out/`               |
-| `pnpm start`     | Serves the built `out/` folder on port 3000      |
-| `pnpm lint`      | Runs ESLint                                      |
-| `pnpm typecheck` | Runs the TypeScript compiler (after a build)     |
+| Command          | What it does                                  |
+| ---------------- | --------------------------------------------- |
+| `pnpm dev`       | Starts the dev server with hot reload         |
+| `pnpm build`     | Builds the static site into `out/`            |
+| `pnpm start`     | Serves the built `out/` folder on port 4173   |
+| `pnpm lint`      | Runs ESLint                                   |
+| `pnpm typecheck` | Runs the TypeScript compiler (after a build)  |
 
 ## Editing content
 
 - **Profile, projects, education and links** are all in [`src/data/resume.tsx`](./src/data/resume.tsx).
 - **Blog posts** are MDX files in [`content/`](./content). Each one needs `title`, `publishedAt` and `summary` in its front matter.
-- **Profile photo** is [`public/me.jpg`](./public/me.jpg).
+- **Profile photo and logos** are in [`public/`](./public).
 
 ## Deployment
 
 Every push to `main` runs [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml). It lints, builds and type checks the site, then publishes the `out/` folder to GitHub Pages. Pull requests run the same checks without deploying.
 
-The custom domain comes from [`public/CNAME`](./public/CNAME). DNS for devpilotx.me points to GitHub Pages with four `A` records (`185.199.108.153` to `185.199.111.153`) and a `CNAME` record for `www`.
+The build reads its base path from the repository's Pages settings through `actions/configure-pages`, so it works under `/devpilotX` on github.io today. To move it to a custom domain such as devpilotx.me, add the domain under **Settings → Pages** and push again. No code changes are needed.
 
 ## Credits
 

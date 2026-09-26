@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(DATA.url),
+  metadataBase: new URL(`${DATA.url}/`),
   title: {
     default: `${DATA.name} | Full-Stack Developer`,
     template: `%s | ${DATA.name}`,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   keywords: [...DATA.keywords],
   authors: [{ name: DATA.name, url: DATA.url }],
   creator: DATA.name,
-  alternates: { canonical: "/" },
+  alternates: { canonical: `${DATA.url}/` },
   openGraph: {
     title: `${DATA.name} | Full-Stack Developer`,
     description: DATA.description,
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: DATA.name,
     locale: "en_IN",
     type: "website",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: DATA.name }],
+    images: [{ url: `${DATA.url}/og.png`, width: 1200, height: 630, alt: DATA.name }],
   },
   robots: {
     index: true,
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     description: DATA.description,
     card: "summary_large_image",
     creator: "@devpilotx",
-    images: ["/og.png"],
+    images: [`${DATA.url}/og.png`],
   },
 };
 

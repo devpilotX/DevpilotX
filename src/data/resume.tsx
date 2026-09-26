@@ -33,13 +33,13 @@ const GITHUB = "https://github.com/devpilotX";
 export const DATA = {
   name: "Dipanshu Kumar",
   initials: "DK",
-  url: "https://devpilotx.me",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://devpilotx.me",
   location: "India",
   locationLink: "https://www.google.com/maps/place/India",
   description:
     "Full-stack developer building my own SaaS. I work with Python, Node.js, Docker and cloud servers on AWS and Oracle.",
   summary:
-    "I finished my BCA at [Maharishi Markandeshwar (Deemed to be University)](/#education) in Mullana, Ambala in 2024. Before that I studied at Jawahar Navodaya Vidyalaya in Darbhanga, Bihar.\n\nRight now I spend most of my time building my own SaaS under the name DevPilotX. I like owning the whole thing: writing the app, designing the database, and running it myself on AWS EC2 and Oracle Cloud machines with Docker. A few of those projects are below, and everything else is [on my GitHub](https://github.com/devpilotX).",
+    "I finished my BCA at [Maharishi Markandeshwar (Deemed to be University)](#education) in Mullana, Ambala in 2024. Before that I studied at Jawahar Navodaya Vidyalaya in Darbhanga, Bihar.\n\nRight now I spend most of my time building my own SaaS under the name DevPilotX. I like owning the whole thing: writing the app, designing the database, and running it myself on AWS EC2 and Oracle Cloud machines with Docker. A few of those projects are below, and everything else is [on my GitHub](https://github.com/devpilotX).",
   avatarUrl: "/me.jpg",
   keywords: [
     "Dipanshu Kumar",
