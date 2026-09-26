@@ -1,0 +1,40 @@
+---
+title: "How this site is built"
+publishedAt: "2026-09-26"
+summary: "Next.js as a static export, content in MDX, and a GitHub Actions workflow that deploys to GitHub Pages on every push to main."
+---
+
+This site started from the open source [Magic UI portfolio template](https://github.com/magicuidesign/portfolio). I kept the design and changed what sits underneath so it could run on GitHub Pages instead of Vercel.
+
+## The stack
+
+- **Next.js 16** with the App Router
+- **Tailwind CSS v4** and a few shadcn/ui components
+- **Motion** for the blur and fade animations
+- **Content Collections** to turn MDX files into typed posts
+
+All of the personal data lives in one file, `src/data/resume.tsx`. Projects, education, links and skills are plain objects there, and the pages just map over them.
+
+## Static export
+
+GitHub Pages only serves files. There is no Node server, so the whole site has to be HTML, CSS and JavaScript by the time it is uploaded. Next.js supports this with one line:
+
+```js title="next.config.mjs"
+const nextConfig = {
+  output: "export",
+  trailingSlash: true,
+  images: { unoptimized: true },
+};
+```
+
+That change had a few side effects.
+
+1. **No request data on the server.** The blog index used to read `?page=2` from `searchParams` on the server. In a static build there is no request, so the list moved into a client component that reads the page number with `useSearchParams`.
+2. **Open Graph images are rendered at build time.** They used to run on the edge and fetch fonts over the network. Now they read the font files and my photo straight from disk while the site builds.
+3. **No custom headers.** `headers()` in the Next config does nothing on a static host, so I removed it rather than keep config that looks like it works.
+
+## Deploying
+
+A single workflow in `.github/workflows` handles everything. On a pull request it runs the linter, the type checker and a full build. On a push to `main` it also uploads the `out` folder and publishes it with `actions/deploy-pages`. The `CNAME` file in `public` tells GitHub Pages to serve the site on devpilotx.me.
+
+Adding a post is a new `.mdx` file in `content`. Pushing it to `main` is the whole release process.
