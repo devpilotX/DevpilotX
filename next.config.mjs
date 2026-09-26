@@ -4,7 +4,12 @@ import { withContentCollections } from "@content-collections/next";
 // "/devpilotX" on devpilotx.github.io, or "" once a custom domain is set.
 // Locally both are empty, so the dev server runs at the root as usual.
 const basePath = process.env.PAGES_BASE_PATH ?? "";
-const siteUrl = process.env.PAGES_BASE_URL || "https://devpilotx.me";
+// configure-pages reports http:// whenever "Enforce HTTPS" is off, but the
+// site is always reachable over https, so links and metadata use that.
+const siteUrl = (process.env.PAGES_BASE_URL || "https://devpilotx.me").replace(
+  /^http:\/\//,
+  "https://"
+);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
